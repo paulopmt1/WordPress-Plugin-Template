@@ -1,0 +1,58 @@
+name: Publish Website
+
+on:
+  push:
+    branches:
+      - trunk
+  workflow_dispatch:
+jobs:
+  Build-Artifact-Action:
+    name: Build-Artifact-Action
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+      with:
+        submodules: true
+        ssh-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Install PHP dependencies
+      uses: php-actions/composer@v6
+      with:
+        dev: no
+        php_version: 8.1
+
+    - name: Setup node 20
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+
+    - name: Run yarn install
+      uses: borales/actions-yarn@v4
+      with:
+        cmd: install
+
+    - name: Run yarn grunt
+      uses: borales/actions-yarn@v4
+      with:
+        cmd: grunt
+
+    - name: Upload the artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: repository-artifact
+        path: |
+          .
+          !.DS_Store
+          !.git 
+          !.gitattributes 
+          !.github 
+          !.gitignore 
+          !.editorconfig.json 
+          !README.md 
+          !composer.lock 
+          !package-lock.json 
+          !package.json 
+          !travis.yml 
+          !phpcs.xml.dist 
+          !node_modules 
+          !yarn.lock
